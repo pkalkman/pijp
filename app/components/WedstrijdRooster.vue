@@ -5,7 +5,6 @@ const aantalTafels = computed(() => pijpSettings.value?.aantalTafels ?? 1);
 
 const zoekTerm = ref('');
 
-// Groepeer wedstrijden per tijdstip, gesorteerd op tijd
 const rondes = computed(() => {
   const map = new Map<number, typeof wedstrijden.value>();
   for (const w of wedstrijden.value) {
@@ -63,60 +62,93 @@ function formatTijd(date: Date): string {
       />
     </div>
 
-    <div v-if="rondes.length > 0" class="overflow-x-auto -mx-4 sm:mx-0 px-4 sm:px-0">
-      <table class="border-collapse text-sm w-full">
-        <thead>
-          <tr>
-            <th class="bg-blue-400 text-yellow-300 font-bold px-4 py-2 text-left rounded-tl-lg">
-              Tijd
-            </th>
-            <th
-              v-for="tafel in aantalTafels"
-              :key="tafel"
-              class="bg-blue-400 text-yellow-300 font-bold px-4 py-2 text-left"
-              :class="{ 'rounded-tr-lg': tafel === aantalTafels }"
-            >
-              Tafel {{ tafel }}
-            </th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr
-            v-for="(ronde, idx) in rondes"
-            :key="idx"
-            class="border-t border-gray-100 transition-opacity"
-            :class="[
-              rondeMatchesZoekterm(ronde) ? (idx % 2 === 0 ? 'bg-white' : 'bg-blue-50') : 'opacity-25',
-            ]"
+    <template v-if="rondes.length > 0">
+      <!-- Mobiel: kaartweergave -->
+      <div class="sm:hidden flex flex-col gap-2">
+        <div
+          v-for="(ronde, idx) in rondes"
+          :key="idx"
+          class="rounded-xl bg-white shadow-sm overflow-hidden transition-opacity"
+          :class="rondeMatchesZoekterm(ronde) ? '' : 'opacity-25'"
+        >
+          <div class="bg-blue-50 px-3 py-1.5 text-xs font-mono font-semibold text-blue-400">
+            {{ formatTijd(ronde[0].tijdstip) }}
+          </div>
+          <div
+            v-for="(w, t) in ronde"
+            :key="t"
+            class="flex items-center gap-2 px-3 py-2 border-t border-gray-100 first:border-t-0"
           >
-            <td class="px-4 py-2 font-mono text-gray-500 whitespace-nowrap">
-              {{ formatTijd(ronde[0].tijdstip) }}
-            </td>
-            <td
-              v-for="tafel in aantalTafels"
-              :key="tafel"
-              class="px-4 py-2"
+            <span class="text-xs font-semibold text-gray-400 w-6 shrink-0">T{{ t + 1 }}</span>
+            <span class="flex-1 text-sm">
+              <span
+                v-for="(part, i) in highlightParts(w.ona.speler.naam)"
+                :key="'o' + i"
+                class="font-medium"
+                :class="part.match ? 'bg-yellow-200 text-yellow-900 rounded px-0.5' : 'text-gray-800'"
+              >{{ part.text }}</span>
+              <span class="mx-1.5 text-gray-300">vs</span>
+              <span
+                v-for="(part, i) in highlightParts(w.pijp.speler.naam)"
+                :key="'p' + i"
+                class="font-medium"
+                :class="part.match ? 'bg-yellow-200 text-yellow-900 rounded px-0.5' : 'text-gray-800'"
+              >{{ part.text }}</span>
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Desktop: tabelweergave -->
+      <div class="hidden sm:block overflow-x-auto">
+        <table class="border-collapse text-sm w-full">
+          <thead>
+            <tr>
+              <th class="bg-blue-400 text-yellow-300 font-bold px-4 py-2 text-left rounded-tl-lg">
+                Tijd
+              </th>
+              <th
+                v-for="tafel in aantalTafels"
+                :key="tafel"
+                class="bg-blue-400 text-yellow-300 font-bold px-4 py-2 text-left"
+                :class="{ 'rounded-tr-lg': tafel === aantalTafels }"
+              >
+                Tafel {{ tafel }}
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr
+              v-for="(ronde, idx) in rondes"
+              :key="idx"
+              class="border-t border-gray-100 transition-opacity"
+              :class="rondeMatchesZoekterm(ronde) ? (idx % 2 === 0 ? 'bg-white' : 'bg-blue-50') : 'opacity-25'"
             >
-              <template v-if="ronde[tafel - 1]">
-                <span
-                  v-for="(part, i) in highlightParts(ronde[tafel - 1].ona.speler.naam)"
-                  :key="i"
-                  class="font-medium"
-                  :class="part.match ? 'bg-yellow-200 text-yellow-900 rounded px-0.5' : 'text-gray-800'"
-                >{{ part.text }}</span>
-                <span class="mx-2 text-gray-400">vs</span>
-                <span
-                  v-for="(part, i) in highlightParts(ronde[tafel - 1].pijp.speler.naam)"
-                  :key="i"
-                  class="font-medium"
-                  :class="part.match ? 'bg-yellow-200 text-yellow-900 rounded px-0.5' : 'text-gray-800'"
-                >{{ part.text }}</span>
-              </template>
-              <span v-else class="text-gray-300">—</span>
-            </td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
+              <td class="px-4 py-2 font-mono text-gray-500 whitespace-nowrap">
+                {{ formatTijd(ronde[0].tijdstip) }}
+              </td>
+              <td v-for="tafel in aantalTafels" :key="tafel" class="px-4 py-2 whitespace-nowrap">
+                <template v-if="ronde[tafel - 1]">
+                  <span
+                    v-for="(part, i) in highlightParts(ronde[tafel - 1].ona.speler.naam)"
+                    :key="i"
+                    class="font-medium"
+                    :class="part.match ? 'bg-yellow-200 text-yellow-900 rounded px-0.5' : 'text-gray-800'"
+                  >{{ part.text }}</span>
+                  <span class="mx-2 text-gray-400">vs</span>
+                  <span
+                    v-for="(part, i) in highlightParts(ronde[tafel - 1].pijp.speler.naam)"
+                    :key="i"
+                    class="font-medium"
+                    :class="part.match ? 'bg-yellow-200 text-yellow-900 rounded px-0.5' : 'text-gray-800'"
+                  >{{ part.text }}</span>
+                </template>
+                <span v-else class="text-gray-300">—</span>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </template>
   </div>
 </template>
