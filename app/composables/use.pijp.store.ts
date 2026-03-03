@@ -30,8 +30,9 @@ export const usePijpStore = () => {
     };
 
     pijpSettings.value = {
-      startTijd: new Date(2026, 2, 8, 13, 0, 0),
+      startTijd: new Date(2026, 2, 8, 12, 0, 0),
       minutenPerWedstrijd: 20,
+      aantalTafels: 2
     };
   }
 
@@ -45,6 +46,10 @@ export const usePijpStore = () => {
     }
   }
 
+  function updateSettings(settings: PijpSettings) {
+    pijpSettings.value = settings;
+  }
+
   initPoules();
 
   return {
@@ -54,5 +59,6 @@ export const usePijpStore = () => {
 
     swapInPouleOna: (a: number, b: number) => swapSpelers(pouleOna, a, b),
     swapInPoulePijp: (a: number, b: number) => swapSpelers(poulePijp, a, b),
+    updateSettings,
   };
 };

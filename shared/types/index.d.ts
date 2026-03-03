@@ -10,4 +10,5 @@ export type Poule = {
 export type PijpSettings = {
   startTijd: Date;
   minutenPerWedstrijd: number;
+  aantalTafels: number;
 }
