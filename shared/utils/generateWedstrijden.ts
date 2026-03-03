@@ -9,64 +9,67 @@ function shuffle<T>(arr: T[]): T[] {
   return result;
 }
 
+/**
+ * Genereert een wedstrijdrooster via een 1-factorizatie van K_{n,n}.
+ *
+ * Alle n×n paren worden verdeeld in n perfecte matchings (elke matching
+ * dekt alle Ona- en Pijp-spelers precies één keer). Elke matching vormt
+ * een blok van ceil(n/aantalTafels) rondes.
+ *
+ * Binnen een blok kan geen speler twee keer voorkomen (perfecte matching).
+ * Aan de blokgrenzen worden pairs gesorteerd zodat spelers die net gespeeld
+ * hebben pas ná de eerste subronde van het volgende blok aan de beurt komen.
+ * Voor k=2 en n=6 is gegarandeerd dat dit altijd lukt.
+ */
 export function generateWedstrijden(pouleOna: Poule, poulePijp: Poule, settings: PijpSettings): Wedstrijd[] {
   const { startTijd, minutenPerWedstrijd, aantalTafels } = settings;
 
-  // Alle mogelijke combinaties, willekeurig geschud
-  type Pair = [Speler, Speler];
-  let remaining: Pair[] = shuffle(
-    pouleOna.spelers.flatMap((o) => poulePijp.spelers.map((p): Pair => [o, p]))
-  );
+  const ona = shuffle([...pouleOna.spelers]);
+  const pijp = shuffle([...poulePijp.spelers]);
+  const n = ona.length;
 
-  // Bijhouden in welke ronde een speler voor het laatst heeft gespeeld
-  const lastRound = new Map<number, Map<'ona' | 'pijp', number>>();
-  const getLastRound = (speler: Speler, poule: 'ona' | 'pijp') =>
-    lastRound.get(speler.positie)?.get(poule) ?? -Infinity;
+  type Pair = [Speler, Speler];
+
+  // n perfecte matchings via cyclische constructie, volgorde geshuffeld
+  const matchings: Pair[][] = shuffle(
+    Array.from({ length: n }, (_, j) =>
+      shuffle(Array.from({ length: n }, (__, i): Pair => [ona[i], pijp[(i + j) % n]]))
+    )
+  );
 
   const rounds: Pair[][] = [];
 
-  while (remaining.length > 0) {
-    // Sorteer op langst wachtende paren (minste max van lastRound van beide spelers)
-    remaining.sort((a, b) => {
-      const waitA = Math.max(getLastRound(a[0], 'ona'), getLastRound(a[1], 'pijp'));
-      const waitB = Math.max(getLastRound(b[0], 'ona'), getLastRound(b[1], 'pijp'));
-      return waitA - waitB;
-    });
+  // Bijhouden welke spelers in de laatste ronde van het vorige blok speelden
+  let forbiddenOna = new Set<number>();
+  let forbiddenPijp = new Set<number>();
 
-    const round: Pair[] = [];
-    const onaInRound = new Set<number>();
-    const pijpInRound = new Set<number>();
-    const volgendeRonde: Pair[] = [];
+  for (const matching of matchings) {
+    // Pairs waarbij geen van beide spelers net gespeeld heeft → eerst plannen
+    const available = matching.filter(
+      ([o, p]) => !forbiddenOna.has(o.positie) && !forbiddenPijp.has(p.positie)
+    );
+    const rest = matching.filter(
+      ([o, p]) => forbiddenOna.has(o.positie) || forbiddenPijp.has(p.positie)
+    );
 
-    for (const [o, p] of remaining) {
-      if (round.length < aantalTafels && !onaInRound.has(o.positie) && !pijpInRound.has(p.positie)) {
-        round.push([o, p]);
-        onaInRound.add(o.positie);
-        pijpInRound.add(p.positie);
-      } else {
-        volgendeRonde.push([o, p]);
-      }
+    // Beschikbare pairs vooraan → eerste subronde bevat geen spelers die net speelden
+    const ordered = [...shuffle(available), ...shuffle(rest)];
+
+    const blockRounds: Pair[][] = [];
+    for (let r = 0; r < ordered.length; r += aantalTafels) {
+      blockRounds.push(ordered.slice(r, r + aantalTafels));
     }
 
-    const roundIdx = rounds.length;
-    for (const [o, p] of round) {
-      if (!lastRound.has(o.positie)) lastRound.set(o.positie, new Map());
-      if (!lastRound.has(p.positie)) lastRound.set(p.positie, new Map());
-      lastRound.get(o.positie)!.set('ona', roundIdx);
-      lastRound.get(p.positie)!.set('pijp', roundIdx);
-    }
+    rounds.push(...blockRounds);
 
-    rounds.push(round);
-    remaining = volgendeRonde;
+    // Verboden spelers voor het volgende blok = spelers in de laatste subronde van dit blok
+    const last = blockRounds[blockRounds.length - 1];
+    forbiddenOna = new Set(last.map(([o]) => o.positie));
+    forbiddenPijp = new Set(last.map(([, p]) => p.positie));
   }
 
-  // Omzetten naar Wedstrijd[]
-  const wedstrijden: Wedstrijd[] = [];
-  for (let r = 0; r < rounds.length; r++) {
+  return rounds.flatMap((round, r) => {
     const tijdstip = new Date(startTijd.getTime() + r * minutenPerWedstrijd * 60_000);
-    for (const [o, p] of rounds[r]) {
-      wedstrijden.push({ tijdstip, ona: { speler: o }, pijp: { speler: p } });
-    }
-  }
-  return wedstrijden;
+    return round.map(([o, p]) => ({ tijdstip, ona: { speler: o }, pijp: { speler: p } }));
+  });
 }
