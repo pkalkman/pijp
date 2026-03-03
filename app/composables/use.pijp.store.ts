@@ -1,6 +1,10 @@
+import type { PijpSettings } from '#shared/types';
+
 export const usePijpStore = () => {
   const pouleOna = useState<Poule | null>('pijp:poule:ona', () => null);
   const poulePijp = useState<Poule | null>('pijp:poule:pijp', () => null);
+
+  const pijpSettings = useState<PijpSettings | null>('pijp:settings', () => null);
 
   function initPoules() {
     pouleOna.value = {
@@ -24,6 +28,11 @@ export const usePijpStore = () => {
         { positie: 6, naam: 'Koert Veninga' },
       ],
     };
+
+    pijpSettings.value = {
+      startTijd: new Date(2026, 2, 8, 13, 0, 0),
+      minutenPerWedstrijd: 20,
+    };
   }
 
   function swapSpelers(poule: Ref<Poule | null>, positieA: number, positieB: number) {
@@ -41,6 +50,8 @@ export const usePijpStore = () => {
   return {
     pouleOna,
     poulePijp,
+    pijpSettings,
+
     swapInPouleOna: (a: number, b: number) => swapSpelers(pouleOna, a, b),
     swapInPoulePijp: (a: number, b: number) => swapSpelers(poulePijp, a, b),
   };

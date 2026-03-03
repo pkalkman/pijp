@@ -6,3 +6,8 @@ export type Speler = {
 export type Poule = {
   spelers: Speler[];
 };
+
+export type PijpSettings = {
+  startTijd: Date;
+  minutenPerWedstrijd: number;
+}
