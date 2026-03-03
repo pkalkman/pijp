@@ -47,7 +47,7 @@ function formatTijd(date: Date): string {
 
 <template>
   <div class="flex flex-col gap-4">
-    <div class="flex items-center gap-3">
+    <div class="flex flex-wrap items-center gap-3">
       <button
         class="rounded-lg bg-blue-400 px-5 py-2 text-sm font-semibold text-yellow-300 hover:bg-blue-500 transition-colors"
         @click="genereerWedstrijden"
@@ -63,7 +63,7 @@ function formatTijd(date: Date): string {
       />
     </div>
 
-    <div v-if="rondes.length > 0" class="overflow-auto">
+    <div v-if="rondes.length > 0" class="overflow-x-auto -mx-4 sm:mx-0 px-4 sm:px-0">
       <table class="border-collapse text-sm w-full">
         <thead>
           <tr>

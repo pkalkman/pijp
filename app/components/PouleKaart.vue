@@ -36,7 +36,7 @@ function onDrop(positie: number) {
 </script>
 
 <template>
-  <div class="w-72 rounded-xl bg-white shadow-md overflow-hidden">
+  <div class="w-full sm:w-72 rounded-xl bg-white shadow-md overflow-hidden">
     <div class="bg-blue-400 px-5 py-3 text-yellow-300 font-bold text-lg">
       {{ titel }}
     </div>

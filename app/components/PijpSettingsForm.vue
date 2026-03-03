@@ -20,7 +20,7 @@ function onSubmit() {
 </script>
 
 <template>
-  <div class="w-72 rounded-xl bg-white shadow-md overflow-hidden">
+  <div class="w-full sm:w-72 rounded-xl bg-white shadow-md overflow-hidden">
     <div class="bg-blue-400 px-5 py-3 text-yellow-300 font-bold text-lg">Instellingen</div>
     <form class="px-5 py-4 flex flex-col gap-4" @submit.prevent="onSubmit">
       <label class="flex flex-col gap-1">
