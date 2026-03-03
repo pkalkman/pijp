@@ -12,3 +12,16 @@ export type PijpSettings = {
   minutenPerWedstrijd: number;
   aantalTafels: number;
 }
+
+export type Wedstrijd = {
+  tijdstip: Date;
+  ona: {
+    speler: Speler;
+    gemaakt?: number;
+  };
+  pijp: {
+    speler: Speler;
+    gemaakt?: number;
+  }
+  beurten?: number;
+}

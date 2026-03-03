@@ -1,8 +1,9 @@
-import type { PijpSettings } from '#shared/types';
+import type { PijpSettings, Wedstrijd } from '#shared/types';
 
 export const usePijpStore = () => {
   const pouleOna = useState<Poule | null>('pijp:poule:ona', () => null);
   const poulePijp = useState<Poule | null>('pijp:poule:pijp', () => null);
+  const wedstrijden = useState<Wedstrijd[]>('pijp:wedstrijden', () => []);
 
   const pijpSettings = useState<PijpSettings | null>('pijp:settings', () => null);
 
@@ -55,6 +56,7 @@ export const usePijpStore = () => {
   return {
     pouleOna,
     poulePijp,
+    wedstrijden,
     pijpSettings,
 
     swapInPouleOna: (a: number, b: number) => swapSpelers(pouleOna, a, b),
