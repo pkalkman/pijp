@@ -26,10 +26,22 @@ export const usePijpStore = () => {
     };
   }
 
+  function swapSpelers(poule: Ref<Poule | null>, positieA: number, positieB: number) {
+    if (!poule.value) return;
+    const a = poule.value.spelers.find((s) => s.positie === positieA);
+    const b = poule.value.spelers.find((s) => s.positie === positieB);
+    if (a && b) {
+      a.positie = positieB;
+      b.positie = positieA;
+    }
+  }
+
   initPoules();
 
   return {
     pouleOna,
     poulePijp,
+    swapInPouleOna: (a: number, b: number) => swapSpelers(pouleOna, a, b),
+    swapInPoulePijp: (a: number, b: number) => swapSpelers(poulePijp, a, b),
   };
 };
