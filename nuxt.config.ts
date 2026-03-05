@@ -11,4 +11,14 @@ export default defineNuxtConfig({
   vite: {
     plugins: [tailwindcss() as any],
   },
+  runtimeConfig: {
+    mongoURI: process.env.MONGODB_URI,
+  },
+  nitro: {
+    esbuild: {
+      options: {
+        target: 'esnext', // Gives Top Level await :)
+      },
+    },
+  },
 });

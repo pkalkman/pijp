@@ -1,9 +1,12 @@
 export type Speler = {
+  _id: string;
   positie: number;
   naam: string;
+  poule: string;
 };
 
 export type Poule = {
+  naam: string;
   spelers: Speler[];
 };
 
@@ -14,6 +17,7 @@ export type PijpSettings = {
 }
 
 export type Wedstrijd = {
+  _id: string;
   tijdstip: Date;
   ona: {
     speler: Speler;
