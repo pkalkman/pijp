@@ -1,4 +1,5 @@
 import tailwindcss from '@tailwindcss/vite';
+import Aura from '@primeuix/themes/aura';
 
 // https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
@@ -10,6 +11,16 @@ export default defineNuxtConfig({
   css: ['./app/assets/css/main.css'],
   vite: {
     plugins: [tailwindcss() as any],
+  },
+  modules: [
+    '@primevue/nuxt-module'
+  ],
+  primevue: {
+    options: {
+      theme: {
+        preset: Aura
+      }
+    }
   },
   runtimeConfig: {
     mongoURI: process.env.MONGODB_URI,

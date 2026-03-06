@@ -1,5 +1,6 @@
 <script setup lang="ts">
 const route = useRoute();
+const { isAuthenticated, logout } = useAuth();
 const tabs = [
   { label: 'Poules', to: '/' },
   { label: 'Rooster', to: '/rooster' },
@@ -9,8 +10,14 @@ const tabs = [
 <template>
   <div class="flex h-dvh flex-col overflow-hidden bg-blue-50">
     <div class="bg-blue-400 flex-shrink-0 px-4 sm:px-8 pt-safe">
-      <div class="h-14 flex items-center">
-        <span class="text-yellow-300 font-bold text-lg">De Pijp</span>
+      <div class="h-14 flex items-center w-full">
+        <div class="w-full flex justify-between">
+          <span class="text-yellow-300 font-bold text-lg">De Pijp</span>
+          <NuxtLink v-if="!isAuthenticated" to="/login">
+            <Button label="Login" severity="secondary" size="small" />
+          </NuxtLink>
+          <Button v-else label="Logout" severity="secondary" size="small" @click="logout" />
+        </div>
       </div>
       <nav class="flex">
         <NuxtLink
