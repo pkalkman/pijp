@@ -1,5 +1,6 @@
 <script setup lang="ts">
 const { wedstrijden, pijpSettings, genereerWedstrijden } = usePijpStore();
+const { isAuthenticated } = useAuth();
 
 const aantalTafels = computed(() => pijpSettings.value?.aantalTafels ?? 1);
 
@@ -12,19 +13,13 @@ const rondes = computed(() => {
     if (!map.has(key)) map.set(key, []);
     map.get(key)!.push(w);
   }
-  return [...map.entries()]
-    .sort(([a], [b]) => a - b)
-    .map(([, matches]) => matches);
+  return [...map.entries()].sort(([a], [b]) => a - b).map(([, matches]) => matches);
 });
 
 function rondeMatchesZoekterm(ronde: (typeof rondes.value)[number]): boolean {
   if (!zoekTerm.value) return true;
   const term = zoekTerm.value.toLowerCase();
-  return ronde.some(
-    (w) =>
-      w.ona.speler.naam.toLowerCase().includes(term) ||
-      w.pijp.speler.naam.toLowerCase().includes(term)
-  );
+  return ronde.some((w) => w.ona.speler.naam.toLowerCase().includes(term) || w.pijp.speler.naam.toLowerCase().includes(term));
 }
 
 function highlightParts(naam: string): { text: string; match: boolean }[] {
@@ -46,7 +41,7 @@ function formatTijd(date: Date): string {
 
 <template>
   <div class="flex flex-col gap-4">
-    <div class="flex flex-wrap items-center gap-3">
+    <div v-if="isAuthenticated" class="flex flex-wrap items-center gap-3">
       <button
         class="rounded-lg bg-blue-400 px-5 py-2 text-sm font-semibold text-yellow-300 hover:bg-blue-500 transition-colors"
         @click="genereerWedstrijden"
@@ -74,11 +69,7 @@ function formatTijd(date: Date): string {
           <div class="bg-blue-50 px-3 py-1.5 text-xs font-mono font-semibold text-blue-400">
             {{ formatTijd(ronde[0].tijdstip) }}
           </div>
-          <div
-            v-for="(w, t) in ronde"
-            :key="t"
-            class="flex items-center gap-2 px-3 py-2 border-t border-gray-100 first:border-t-0"
-          >
+          <div v-for="(w, t) in ronde" :key="t" class="flex items-center gap-2 px-3 py-2 border-t border-gray-100 first:border-t-0">
             <span class="text-xs font-semibold text-gray-400 w-6 shrink-0">T{{ t + 1 }}</span>
             <span class="flex-1 text-sm">
               <span
@@ -86,14 +77,16 @@ function formatTijd(date: Date): string {
                 :key="'o' + i"
                 class="font-medium"
                 :class="part.match ? 'bg-yellow-200 text-yellow-900 rounded px-0.5' : 'text-gray-800'"
-              >{{ part.text }}</span>
+                >{{ part.text }}</span
+              >
               <span class="mx-1.5 text-gray-300">vs</span>
               <span
                 v-for="(part, i) in highlightParts(w.pijp.speler.naam)"
                 :key="'p' + i"
                 class="font-medium"
                 :class="part.match ? 'bg-yellow-200 text-yellow-900 rounded px-0.5' : 'text-gray-800'"
-              >{{ part.text }}</span>
+                >{{ part.text }}</span
+              >
             </span>
           </div>
         </div>
@@ -104,9 +97,7 @@ function formatTijd(date: Date): string {
         <table class="border-collapse text-sm w-full">
           <thead>
             <tr>
-              <th class="bg-blue-400 text-yellow-300 font-bold px-4 py-2 text-left rounded-tl-lg">
-                Tijd
-              </th>
+              <th class="bg-blue-400 text-yellow-300 font-bold px-4 py-2 text-left rounded-tl-lg">Tijd</th>
               <th
                 v-for="tafel in aantalTafels"
                 :key="tafel"
@@ -134,14 +125,16 @@ function formatTijd(date: Date): string {
                     :key="i"
                     class="font-medium"
                     :class="part.match ? 'bg-yellow-200 text-yellow-900 rounded px-0.5' : 'text-gray-800'"
-                  >{{ part.text }}</span>
+                    >{{ part.text }}</span
+                  >
                   <span class="mx-2 text-gray-400">vs</span>
                   <span
                     v-for="(part, i) in highlightParts(ronde[tafel - 1].pijp.speler.naam)"
                     :key="i"
                     class="font-medium"
                     :class="part.match ? 'bg-yellow-200 text-yellow-900 rounded px-0.5' : 'text-gray-800'"
-                  >{{ part.text }}</span>
+                    >{{ part.text }}</span
+                  >
                 </template>
                 <span v-else class="text-gray-300">—</span>
               </td>
