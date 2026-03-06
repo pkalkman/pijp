@@ -1,10 +1,10 @@
-import type { PijpSettings, Poule, Speler, Wedstrijd } from '../types';
+import type { PijpSettings, Poule, Speler, Wedstrijd } from '#shared/types';
 
 function shuffle<T>(arr: T[]): T[] {
   const result = [...arr];
   for (let i = result.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));
-    [result[i], result[j]] = [result[j], result[i]];
+    [result[i], result[j]] = [result[j]!, result[i]!];
   }
   return result;
 }
@@ -21,7 +21,7 @@ function shuffle<T>(arr: T[]): T[] {
  * hebben pas ná de eerste subronde van het volgende blok aan de beurt komen.
  * Voor k=2 en n=6 is gegarandeerd dat dit altijd lukt.
  */
-export function generateWedstrijden(pouleOna: Poule, poulePijp: Poule, settings: PijpSettings): Wedstrijd[] {
+export function generateWedstrijden(pouleOna: Poule, poulePijp: Poule, settings: PijpSettings): Omit<Wedstrijd, '_id'>[] {
   const { startTijd, minutenPerWedstrijd, aantalTafels } = settings;
 
   const ona = shuffle([...pouleOna.spelers]);
@@ -32,9 +32,7 @@ export function generateWedstrijden(pouleOna: Poule, poulePijp: Poule, settings:
 
   // n perfecte matchings via cyclische constructie, volgorde geshuffeld
   const matchings: Pair[][] = shuffle(
-    Array.from({ length: n }, (_, j) =>
-      shuffle(Array.from({ length: n }, (__, i): Pair => [ona[i], pijp[(i + j) % n]]))
-    )
+    Array.from({ length: n }, (_, j) => shuffle(Array.from({ length: n }, (__, i): Pair => [ona[i]!, pijp[(i + j) % n]!]))),
   );
 
   const rounds: Pair[][] = [];
@@ -45,12 +43,8 @@ export function generateWedstrijden(pouleOna: Poule, poulePijp: Poule, settings:
 
   for (const matching of matchings) {
     // Pairs waarbij geen van beide spelers net gespeeld heeft → eerst plannen
-    const available = matching.filter(
-      ([o, p]) => !forbiddenOna.has(o.positie) && !forbiddenPijp.has(p.positie)
-    );
-    const rest = matching.filter(
-      ([o, p]) => forbiddenOna.has(o.positie) || forbiddenPijp.has(p.positie)
-    );
+    const available = matching.filter(([o, p]) => !forbiddenOna.has(o.positie) && !forbiddenPijp.has(p.positie));
+    const rest = matching.filter(([o, p]) => forbiddenOna.has(o.positie) || forbiddenPijp.has(p.positie));
 
     // Beschikbare pairs vooraan → eerste subronde bevat geen spelers die net speelden
     const ordered = [...shuffle(available), ...shuffle(rest)];
@@ -63,7 +57,7 @@ export function generateWedstrijden(pouleOna: Poule, poulePijp: Poule, settings:
     rounds.push(...blockRounds);
 
     // Verboden spelers voor het volgende blok = spelers in de laatste subronde van dit blok
-    const last = blockRounds[blockRounds.length - 1];
+    const last = blockRounds[blockRounds.length - 1]!;
     forbiddenOna = new Set(last.map(([o]) => o.positie));
     forbiddenPijp = new Set(last.map(([, p]) => p.positie));
   }

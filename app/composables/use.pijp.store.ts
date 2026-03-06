@@ -1,5 +1,4 @@
 import type { PijpSettings, Wedstrijd } from '#shared/types';
-import { generateWedstrijden as _generateWedstrijden } from '#shared/utils/generateWedstrijden';
 
 export const usePijpStore = () => {
   const pouleOna = useState<Poule | null>('pijp:poule:ona', () => null);
@@ -13,9 +12,9 @@ export const usePijpStore = () => {
     pijpSettings.value = settings;
   }
 
-  function genereerWedstrijden() {
-    if (!pouleOna.value || !poulePijp.value || !pijpSettings.value) return;
-    wedstrijden.value = _generateWedstrijden(pouleOna.value, poulePijp.value, pijpSettings.value);
+  async function genereerWedstrijden() {
+    const result = await $fetch<Wedstrijd[]>('/api/wedstrijden', { method: 'POST' });
+    wedstrijden.value = result.map((w) => ({ ...w, tijdstip: new Date(w.tijdstip) }));
   }
 
   async function initStore() {
@@ -31,6 +30,9 @@ export const usePijpStore = () => {
     };
 
     pijpSettings.value = await $fetch<PijpSettings>('/api/settings');
+
+    const savedWedstrijden = await $fetch<Wedstrijd[]>('/api/wedstrijden');
+    wedstrijden.value = savedWedstrijden.map((w) => ({ ...w, tijdstip: new Date(w.tijdstip) }));
 
     initDone.value = true;
   }

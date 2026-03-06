@@ -1,3 +1,5 @@
+import type { Wedstrijd } from '#shared/types';
+
 async function getAllSpelers(): Promise<Speler[]> {
   let spelers = await spelerTable.find().toArray();
 
@@ -43,7 +45,34 @@ async function getPijpSettings(): Promise<PijpSettings> {
   return result;
 }
 
+async function getAllWedstrijden(): Promise<Wedstrijd[]> {
+  const wedstrijden = await wedstrijdTable.find().toArray();
+  return wedstrijden.map((w) => ({
+    ...w,
+    _id: w._id!.toHexString(),
+    ona: { ...w.ona, speler: { ...w.ona.speler, _id: w.ona.speler._id as unknown as string } },
+    pijp: { ...w.pijp, speler: { ...w.pijp.speler, _id: w.pijp.speler._id as unknown as string } },
+  }));
+}
+
+async function generateAndSaveWedstrijden(): Promise<Wedstrijd[]> {
+  const spelers = await getAllSpelers();
+  const settings = await getPijpSettings();
+
+  const pouleOna = { naam: 'ONA', spelers: spelers.filter((s) => s.poule === 'ONA') };
+  const poulePijp = { naam: 'De Pijp - N-Surance', spelers: spelers.filter((s) => s.poule === 'De Pijp - N-Surance') };
+
+  const wedstrijden = generateWedstrijden(pouleOna, poulePijp, settings);
+
+  await wedstrijdTable.deleteMany({});
+  await wedstrijdTable.insertMany(wedstrijden as any);
+
+  return getAllWedstrijden();
+}
+
 export const pijpService = {
   getAllSpelers,
   getPijpSettings,
+  getAllWedstrijden,
+  generateAndSaveWedstrijden,
 };
