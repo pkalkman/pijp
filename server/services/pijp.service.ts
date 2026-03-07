@@ -78,8 +78,7 @@ async function updateWedstrijdUitslag(id: string, data: { onaGemaakt?: number; p
   if (data.beurten !== undefined) setFields['beurten'] = data.beurten;
 
   if (Object.keys(setFields).length) {
-    const dus = await wedstrijdTable.updateOne({ _id: new ObjectId(id) }, { $set: setFields });
-    console.log('dus', dus);
+    await wedstrijdTable.updateOne({ _id: new ObjectId(id) }, { $set: setFields });
   }
 }
 
