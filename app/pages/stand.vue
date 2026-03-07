@@ -48,14 +48,14 @@ const totaalPijp = computed(() => totaal('De Pijp - N-Surance'));
             >
               <td class="px-2 py-2 text-gray-400 font-mono">{{ idx + 1 }}</td>
               <td class="px-2 py-2 font-medium text-gray-800">{{ regel.speler.naam }}</td>
-              <td class="px-2 py-2 text-right text-gray-600">{{ regel.gespeeld }}</td>
-              <td class="px-2 py-2 text-right text-gray-600">{{ regel.caramboles }}</td>
-              <td class="px-2 py-2 text-right text-gray-600">{{ regel.beurten }}</td>
-              <td class="px-2 py-2 text-right text-gray-600">
+              <td class="px-2 py-2 text-right! text-gray-600">{{ regel.gespeeld }}</td>
+              <td class="px-2 py-2 text-right! text-gray-600">{{ regel.caramboles }}</td>
+              <td class="px-2 py-2 text-right! text-gray-600">{{ regel.beurten }}</td>
+              <td class="px-2 py-2 text-right! text-gray-600">
                 <FormattedNumber v-if="regel.beurten" :input-number="regel.caramboles / regel.beurten" :aantal-decimalen="3" />
                 <FormattedNumber v-else :input-number="0" :aantal-decimalen="3" />
               </td>
-              <td class="px-2 py-2 text-right font-bold text-blue-500">{{ regel.punten }}</td>
+              <td class="px-2 py-2 text-right! font-bold text-blue-500">{{ regel.punten }}</td>
             </tr>
           </tbody>
           <tfoot>
@@ -63,19 +63,31 @@ const totaalPijp = computed(() => totaal('De Pijp - N-Surance'));
               <td class="px-4 py-2" colspan="2">
                 <span class="text-xs font-bold text-blue-400 uppercase tracking-wide">Totaal ONA</span>
               </td>
-              <td class="px-4 py-2 text-right font-semibold text-gray-700">{{ totaalOna.gespeeld }}</td>
-              <td class="px-4 py-2 text-right font-semibold text-gray-700">{{ totaalOna.caramboles }}</td>
-              <td class="px-4 py-2 text-right font-semibold text-gray-700">{{ totaalOna.beurten }}</td>
-              <td class="px-4 py-2 text-right font-bold text-blue-500">{{ totaalOna.punten }}</td>
+              <td class="px-4 py-2 text-right! font-semibold text-gray-700">{{ totaalOna.gespeeld }}</td>
+              <td class="px-4 py-2 text-right! font-semibold text-gray-700">{{ totaalOna.caramboles }}</td>
+              <td class="px-4 py-2 text-right! font-semibold text-gray-700">{{ totaalOna.beurten }}</td>
+              <td class="px-2 py-2 text-right! text-gray-600">
+                <FormattedNumber v-if="totaalOna.beurten" :input-number="totaalOna.caramboles / totaalOna.beurten" :aantal-decimalen="3" />
+                <FormattedNumber v-else :input-number="0" :aantal-decimalen="3" />
+              </td>
+              <td class="px-4 py-2 text-right! font-bold text-blue-500">{{ totaalOna.punten }}</td>
             </tr>
             <tr class="border-t border-blue-100 bg-blue-50">
               <td class="px-4 py-2" colspan="2">
                 <span class="text-xs font-bold text-blue-400 uppercase tracking-wide">Totaal De Pijp</span>
               </td>
-              <td class="px-4 py-2 text-right font-semibold text-gray-700">{{ totaalPijp.gespeeld }}</td>
-              <td class="px-4 py-2 text-right font-semibold text-gray-700">{{ totaalPijp.caramboles }}</td>
-              <td class="px-4 py-2 text-right font-semibold text-gray-700">{{ totaalPijp.beurten }}</td>
-              <td class="px-4 py-2 text-right font-bold text-blue-500">{{ totaalPijp.punten }}</td>
+              <td class="px-4 py-2 text-right! font-semibold text-gray-700">{{ totaalPijp.gespeeld }}</td>
+              <td class="px-4 py-2 text-right! font-semibold text-gray-700">{{ totaalPijp.caramboles }}</td>
+              <td class="px-4 py-2 text-right! font-semibold text-gray-700">{{ totaalPijp.beurten }}</td>
+              <td class="px-2 py-2 text-right! text-gray-600">
+                <FormattedNumber
+                  v-if="totaalPijp.beurten"
+                  :input-number="totaalPijp.caramboles / totaalPijp.beurten"
+                  :aantal-decimalen="3"
+                />
+                <FormattedNumber v-else :input-number="0" :aantal-decimalen="3" />
+              </td>
+              <td class="px-4 py-2 text-right! font-bold text-blue-500">{{ totaalPijp.punten }}</td>
             </tr>
           </tfoot>
         </table>
