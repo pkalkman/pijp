@@ -36,7 +36,7 @@ const tabs = [
         </NuxtLink>
       </nav>
     </div>
-    <div class="grow overflow-y-auto p-4 sm:p-8 pb-safe">
+    <div class="grow overflow-y-scroll p-4 sm:p-8 pb-safe">
       <slot />
     </div>
   </div>
