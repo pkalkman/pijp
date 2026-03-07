@@ -16,6 +16,14 @@ export type PijpSettings = {
   aantalTafels: number;
 }
 
+export type StandRegel = {
+  speler: Speler;
+  gespeeld: number;
+  caramboles: number;
+  beurten: number;
+  punten: number;
+};
+
 export type Wedstrijd = {
   _id: string;
   tijdstip: Date;

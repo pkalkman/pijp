@@ -4,6 +4,7 @@ const { isAuthenticated, logout } = useAuth();
 const tabs = [
   { label: 'Poules', to: '/' },
   { label: 'Rooster', to: '/rooster' },
+  { label: 'Stand', to: '/stand' },
 ];
 </script>
 

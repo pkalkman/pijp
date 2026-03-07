@@ -1,4 +1,4 @@
-import type { Wedstrijd } from '#shared/types';
+import type { StandRegel, Wedstrijd } from '#shared/types';
 import { ObjectId } from 'mongodb';
 
 async function getAllSpelers(): Promise<Speler[]> {
@@ -82,10 +82,49 @@ async function updateWedstrijdUitslag(id: string, data: { onaGemaakt?: number; p
   }
 }
 
+async function getStand(): Promise<StandRegel[]> {
+  const wedstrijden = await wedstrijdTable.find().toArray();
+  const map = new Map<string, StandRegel>();
+
+  for (const w of wedstrijden) {
+    const onaId = w.ona.speler._id as unknown as string;
+    const pijpId = w.pijp.speler._id as unknown as string;
+
+    if (!map.has(onaId)) map.set(onaId, { speler: { ...w.ona.speler, _id: onaId }, gespeeld: 0, caramboles: 0, beurten: 0, punten: 0 });
+    if (!map.has(pijpId)) map.set(pijpId, { speler: { ...w.pijp.speler, _id: pijpId }, gespeeld: 0, caramboles: 0, beurten: 0, punten: 0 });
+
+    if (w.ona.gemaakt === undefined || w.pijp.gemaakt === undefined) continue;
+
+    const ona = map.get(onaId)!;
+    const pijp = map.get(pijpId)!;
+
+    ona.gespeeld++;
+    pijp.gespeeld++;
+    ona.caramboles += w.ona.gemaakt;
+    pijp.caramboles += w.pijp.gemaakt;
+    if (w.beurten) {
+      ona.beurten += w.beurten;
+      pijp.beurten += w.beurten;
+    }
+
+    if (w.ona.gemaakt > w.pijp.gemaakt) {
+      ona.punten += 2;
+    } else if (w.ona.gemaakt === w.pijp.gemaakt) {
+      ona.punten += 1;
+      pijp.punten += 1;
+    } else {
+      pijp.punten += 2;
+    }
+  }
+
+  return [...map.values()].sort((a, b) => b.punten - a.punten || b.caramboles - a.caramboles);
+}
+
 export const pijpService = {
   getAllSpelers,
   getPijpSettings,
   getAllWedstrijden,
   generateAndSaveWedstrijden,
   updateWedstrijdUitslag,
+  getStand,
 };
