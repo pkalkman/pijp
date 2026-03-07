@@ -1,4 +1,4 @@
-import type { PijpSettings, Wedstrijd } from '#shared/types';
+import type { PijpSettings, StandRegel, Wedstrijd } from '#shared/types';
 
 export const usePijpStore = () => {
   const pouleOna = useState<Poule | null>('pijp:poule:ona', () => null);
@@ -7,6 +7,36 @@ export const usePijpStore = () => {
   const pijpSettings = useState<PijpSettings | null>('pijp:settings', () => null);
 
   const initDone = useState<boolean>('pijp:init-done', () => false);
+
+  const stand = computed<StandRegel[]>(() => {
+    const map = new Map<string, StandRegel>();
+    for (const w of wedstrijden.value) {
+      const onaId = w.ona.speler._id;
+      const pijpId = w.pijp.speler._id;
+      if (!map.has(onaId)) map.set(onaId, { speler: w.ona.speler, gespeeld: 0, caramboles: 0, beurten: 0, punten: 0 });
+      if (!map.has(pijpId)) map.set(pijpId, { speler: w.pijp.speler, gespeeld: 0, caramboles: 0, beurten: 0, punten: 0 });
+      if (w.ona.gemaakt === undefined || w.pijp.gemaakt === undefined) continue;
+      const ona = map.get(onaId)!;
+      const pijp = map.get(pijpId)!;
+      ona.gespeeld++;
+      pijp.gespeeld++;
+      ona.caramboles += w.ona.gemaakt;
+      pijp.caramboles += w.pijp.gemaakt;
+      if (w.beurten) {
+        ona.beurten += w.beurten;
+        pijp.beurten += w.beurten;
+      }
+      if (w.ona.gemaakt > w.pijp.gemaakt) {
+        ona.punten += 2;
+      } else if (w.ona.gemaakt === w.pijp.gemaakt) {
+        ona.punten += 1;
+        pijp.punten += 1;
+      } else {
+        pijp.punten += 2;
+      }
+    }
+    return [...map.values()].sort((a, b) => b.punten - a.punten || b.caramboles - a.caramboles);
+  });
 
   function updateSettings(settings: PijpSettings) {
     pijpSettings.value = settings;
@@ -35,6 +65,30 @@ export const usePijpStore = () => {
     wedstrijden.value = savedWedstrijden.map((w) => ({ ...w, tijdstip: new Date(w.tijdstip) }));
 
     initDone.value = true;
+
+    if (import.meta.client) {
+      const eventSource = new EventSource('/api/events');
+
+      eventSource.addEventListener('uitslag-bijgewerkt', (e) => {
+        const data = JSON.parse(e.data) as { id: string; onaGemaakt?: number; pijpGemaakt?: number; beurten?: number };
+        const w = wedstrijden.value.find((w) => w._id === data.id);
+        if (w) {
+          w.ona.gemaakt = data.onaGemaakt;
+          w.pijp.gemaakt = data.pijpGemaakt;
+          w.beurten = data.beurten;
+        }
+      });
+
+      eventSource.addEventListener('uitslag-gewist', (e) => {
+        const data = JSON.parse(e.data) as { id: string };
+        const w = wedstrijden.value.find((w) => w._id === data.id);
+        if (w) {
+          w.ona.gemaakt = undefined;
+          w.pijp.gemaakt = undefined;
+          w.beurten = undefined;
+        }
+      });
+    }
   }
 
   async function verwijderUitslag(wedstrijdId: string) {
@@ -70,6 +124,7 @@ export const usePijpStore = () => {
     initDone,
 
     updateSettings,
+    stand,
     genereerWedstrijden,
     slaUitslagOp,
     verwijderUitslag,

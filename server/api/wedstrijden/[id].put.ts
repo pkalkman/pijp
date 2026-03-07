@@ -17,4 +17,6 @@ export default defineEventHandler(async (event) => {
   const body = await readBody<{ onaGemaakt?: number; pijpGemaakt?: number; beurten?: number }>(event);
 
   await pijpService.updateWedstrijdUitslag(id, body);
+
+  broadcastSseEvent('uitslag-bijgewerkt', { id, ...body });
 });

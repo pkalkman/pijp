@@ -1,11 +1,10 @@
 <script setup lang="ts">
-import type { StandRegel } from '#shared/types';
 import FormattedNumber from '~/components/FormattedNumber.vue';
 
-const { data: stand, status } = await useFetch<StandRegel[]>('/api/stand');
+const { stand } = usePijpStore();
 
 const totaal = (poule: string) =>
-  (stand.value ?? [])
+  stand.value
     .filter((r) => r.speler.poule === poule)
     .reduce(
       (acc, r) => ({
@@ -23,9 +22,7 @@ const totaalPijp = computed(() => totaal('De Pijp - N-Surance'));
 
 <template>
   <div>
-    <div v-if="status === 'pending'" class="text-sm text-gray-400">Laden…</div>
-
-    <template v-else-if="stand && stand.length > 0">
+    <template v-if="stand.length > 0">
       <div class="overflow-x-auto">
         <table class="border-collapse text-xs w-full">
           <thead>
@@ -94,6 +91,6 @@ const totaalPijp = computed(() => totaal('De Pijp - N-Surance'));
       </div>
     </template>
 
-    <p v-else class="text-sm text-gray-400">Nog geen wedstrijden gespeeld.</p>
+    <p v-else class="text-sm text-gray-400">Nog geen uitslagen beschikbaar.</p>
   </div>
 </template>

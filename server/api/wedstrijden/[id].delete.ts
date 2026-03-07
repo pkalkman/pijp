@@ -13,4 +13,6 @@ export default defineEventHandler(async (event) => {
   }
 
   await pijpService.clearWedstrijdUitslag(id);
+
+  broadcastSseEvent('uitslag-gewist', { id });
 });
