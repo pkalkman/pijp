@@ -126,5 +126,13 @@ export const pijpService = {
   getAllWedstrijden,
   generateAndSaveWedstrijden,
   updateWedstrijdUitslag,
+  clearWedstrijdUitslag,
   getStand,
 };
+
+async function clearWedstrijdUitslag(id: string): Promise<void> {
+  await wedstrijdTable.updateOne(
+    { _id: new ObjectId(id) },
+    { $unset: { 'ona.gemaakt': '', 'pijp.gemaakt': '', beurten: '' } },
+  );
+}

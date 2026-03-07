@@ -1,5 +1,5 @@
 <script setup lang="ts">
-const { wedstrijden, pijpSettings, genereerWedstrijden, slaUitslagOp } = usePijpStore();
+const { wedstrijden, pijpSettings, genereerWedstrijden, slaUitslagOp, verwijderUitslag } = usePijpStore();
 const { isAuthenticated } = useAuth();
 
 const aantalTafels = computed(() => pijpSettings.value?.aantalTafels ?? 1);
@@ -66,6 +66,16 @@ async function slaOp(wedstrijdId: string) {
       s.pijpGemaakt !== '' ? Number(s.pijpGemaakt) : undefined,
       s.beurten !== '' ? Number(s.beurten) : undefined,
     );
+  } finally {
+    opslaanBezig.value[wedstrijdId] = false;
+  }
+}
+
+async function wisUitslag(wedstrijdId: string) {
+  opslaanBezig.value[wedstrijdId] = true;
+  try {
+    await verwijderUitslag(wedstrijdId);
+    scores.value[wedstrijdId] = { onaGemaakt: '', pijpGemaakt: '', beurten: '' };
   } finally {
     opslaanBezig.value[wedstrijdId] = false;
   }
@@ -153,6 +163,14 @@ async function slaOp(wedstrijdId: string) {
                 @click="slaOp(w._id)"
               >
                 Opslaan
+              </button>
+              <button
+                v-if="w.ona.gemaakt !== undefined || w.pijp.gemaakt !== undefined"
+                :disabled="opslaanBezig[w._id]"
+                class="rounded bg-red-400 px-2 py-0.5 text-xs font-semibold text-white hover:bg-red-500 disabled:opacity-50 transition-colors"
+                @click="wisUitslag(w._id)"
+              >
+                Wis
               </button>
             </div>
             <div
@@ -243,6 +261,14 @@ async function slaOp(wedstrijdId: string) {
                           @click="slaOp(w._id)"
                         >
                           Opslaan
+                        </button>
+                        <button
+                          v-if="w.ona.gemaakt !== undefined || w.pijp.gemaakt !== undefined"
+                          :disabled="opslaanBezig[w._id]"
+                          class="rounded bg-red-400 px-2 py-0.5 text-xs font-semibold text-white hover:bg-red-500 disabled:opacity-50 transition-colors"
+                          @click="wisUitslag(w._id)"
+                        >
+                          Wis
                         </button>
                       </div>
                       <div

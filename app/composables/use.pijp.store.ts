@@ -37,6 +37,16 @@ export const usePijpStore = () => {
     initDone.value = true;
   }
 
+  async function verwijderUitslag(wedstrijdId: string) {
+    await $fetch(`/api/wedstrijden/${wedstrijdId}`, { method: 'DELETE' });
+    const w = wedstrijden.value.find((w) => w._id === wedstrijdId);
+    if (w) {
+      w.ona.gemaakt = undefined;
+      w.pijp.gemaakt = undefined;
+      w.beurten = undefined;
+    }
+  }
+
   async function slaUitslagOp(wedstrijdId: string, onaGemaakt?: number, pijpGemaakt?: number, beurten?: number) {
     await $fetch(`/api/wedstrijden/${wedstrijdId}`, {
       method: 'PUT',
@@ -62,5 +72,6 @@ export const usePijpStore = () => {
     updateSettings,
     genereerWedstrijden,
     slaUitslagOp,
+    verwijderUitslag,
   };
 };
