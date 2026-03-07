@@ -84,8 +84,9 @@ async function wisUitslag(wedstrijdId: string) {
 
 <template>
   <div class="flex flex-col gap-4">
-    <div v-if="isAuthenticated" class="flex flex-wrap items-center gap-3">
+    <div class="flex flex-wrap items-center gap-3">
       <button
+        v-if="isAuthenticated"
         class="rounded-lg bg-blue-400 px-5 py-2 text-sm font-semibold text-yellow-300 hover:bg-blue-500 transition-colors"
         @click="genereerWedstrijden"
       >
