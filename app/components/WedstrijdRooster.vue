@@ -1,10 +1,28 @@
 <script setup lang="ts">
-const { wedstrijden, pijpSettings, genereerWedstrijden } = usePijpStore();
+const { wedstrijden, pijpSettings, genereerWedstrijden, slaUitslagOp } = usePijpStore();
 const { isAuthenticated } = useAuth();
 
 const aantalTafels = computed(() => pijpSettings.value?.aantalTafels ?? 1);
-
 const zoekTerm = ref('');
+
+// Score form state per wedstrijd._id
+type ScoreForm = { onaGemaakt: string; pijpGemaakt: string; beurten: string };
+const scores = ref<Record<string, ScoreForm>>({});
+const opslaanBezig = ref<Record<string, boolean>>({});
+
+watch(
+  wedstrijden,
+  (ws) => {
+    for (const w of ws) {
+      scores.value[w._id] = {
+        onaGemaakt: w.ona.gemaakt?.toString() ?? '',
+        pijpGemaakt: w.pijp.gemaakt?.toString() ?? '',
+        beurten: w.beurten?.toString() ?? '',
+      };
+    }
+  },
+  { immediate: true },
+);
 
 const rondes = computed(() => {
   const map = new Map<number, typeof wedstrijden.value>();
@@ -36,6 +54,21 @@ function highlightParts(naam: string): { text: string; match: boolean }[] {
 
 function formatTijd(date: Date): string {
   return date.toLocaleTimeString('nl-NL', { hour: '2-digit', minute: '2-digit' });
+}
+
+async function slaOp(wedstrijdId: string) {
+  opslaanBezig.value[wedstrijdId] = true;
+  try {
+    const s = scores.value[wedstrijdId]!;
+    await slaUitslagOp(
+      wedstrijdId,
+      s.onaGemaakt !== '' ? Number(s.onaGemaakt) : undefined,
+      s.pijpGemaakt !== '' ? Number(s.pijpGemaakt) : undefined,
+      s.beurten !== '' ? Number(s.beurten) : undefined,
+    );
+  } finally {
+    opslaanBezig.value[wedstrijdId] = false;
+  }
 }
 </script>
 
@@ -69,25 +102,66 @@ function formatTijd(date: Date): string {
           <div class="bg-blue-50 px-3 py-1.5 text-xs font-mono font-semibold text-blue-400">
             {{ formatTijd(ronde[0].tijdstip) }}
           </div>
-          <div v-for="(w, t) in ronde" :key="t" class="flex items-center gap-2 px-3 py-2 border-t border-gray-100 first:border-t-0">
-            <span class="text-xs font-semibold text-gray-400 w-6 shrink-0">T{{ t + 1 }}</span>
-            <span class="flex-1 text-sm">
-              <span
-                v-for="(part, i) in highlightParts(w.ona.speler.naam)"
-                :key="'o' + i"
-                class="font-medium"
-                :class="part.match ? 'bg-yellow-200 text-yellow-900 rounded px-0.5' : 'text-gray-800'"
-                >{{ part.text }}</span
+          <div v-for="w in ronde" :key="w._id" class="border-t border-gray-100 first:border-t-0">
+            <div class="flex items-center gap-2 px-3 py-2">
+              <span class="text-xs font-semibold text-gray-400 w-6 shrink-0">T{{ ronde.indexOf(w) + 1 }}</span>
+              <span class="flex-1 text-sm">
+                <span
+                  v-for="(part, i) in highlightParts(w.ona.speler.naam)"
+                  :key="'o' + i"
+                  class="font-medium"
+                  :class="part.match ? 'bg-yellow-200 text-yellow-900 rounded px-0.5' : 'text-gray-800'"
+                  >{{ part.text }}</span
+                >
+                <span class="mx-1.5 text-gray-300">vs</span>
+                <span
+                  v-for="(part, i) in highlightParts(w.pijp.speler.naam)"
+                  :key="'p' + i"
+                  class="font-medium"
+                  :class="part.match ? 'bg-yellow-200 text-yellow-900 rounded px-0.5' : 'text-gray-800'"
+                  >{{ part.text }}</span
+                >
+              </span>
+            </div>
+            <div v-if="isAuthenticated && scores[w._id]" class="flex items-center gap-2 px-3 pb-2">
+              <input
+                v-model="scores[w._id].onaGemaakt"
+                type="number"
+                min="0"
+                placeholder="ONA"
+                class="w-14 rounded border border-gray-200 px-1 py-0.5 text-center text-xs text-gray-800 focus:outline-none focus:ring-1 focus:ring-blue-300"
+              />
+              <span class="text-xs text-gray-400">-</span>
+              <input
+                v-model="scores[w._id].pijpGemaakt"
+                type="number"
+                min="0"
+                placeholder="Pijp"
+                class="w-14 rounded border border-gray-200 px-1 py-0.5 text-center text-xs text-gray-800 focus:outline-none focus:ring-1 focus:ring-blue-300"
+              />
+              <span class="text-xs text-gray-400 ml-1">B:</span>
+              <input
+                v-model="scores[w._id].beurten"
+                type="number"
+                min="1"
+                placeholder="0"
+                class="w-14 rounded border border-gray-200 px-1 py-0.5 text-center text-xs text-gray-800 focus:outline-none focus:ring-1 focus:ring-blue-300"
+              />
+              <button
+                :disabled="opslaanBezig[w._id]"
+                class="rounded bg-green-400 px-2 py-0.5 text-xs font-semibold text-white hover:bg-green-500 disabled:opacity-50 transition-colors"
+                @click="slaOp(w._id)"
               >
-              <span class="mx-1.5 text-gray-300">vs</span>
-              <span
-                v-for="(part, i) in highlightParts(w.pijp.speler.naam)"
-                :key="'p' + i"
-                class="font-medium"
-                :class="part.match ? 'bg-yellow-200 text-yellow-900 rounded px-0.5' : 'text-gray-800'"
-                >{{ part.text }}</span
-              >
-            </span>
+                Opslaan
+              </button>
+            </div>
+            <div
+              v-else-if="!isAuthenticated && (w.ona.gemaakt !== undefined || w.pijp.gemaakt !== undefined)"
+              class="px-3 pb-2 text-xs text-gray-500"
+            >
+              {{ w.ona.gemaakt ?? '?' }} – {{ w.pijp.gemaakt ?? '?' }}
+              <span v-if="w.beurten" class="ml-1 text-gray-400">({{ w.beurten }} b.)</span>
+            </div>
           </div>
         </div>
       </div>
@@ -118,25 +192,70 @@ function formatTijd(date: Date): string {
               <td class="px-4 py-2 font-mono text-gray-500 whitespace-nowrap">
                 {{ formatTijd(ronde[0].tijdstip) }}
               </td>
-              <td v-for="tafel in aantalTafels" :key="tafel" class="px-4 py-2 whitespace-nowrap">
-                <template v-if="ronde[tafel - 1]">
-                  <span
-                    v-for="(part, i) in highlightParts(ronde[tafel - 1].ona.speler.naam)"
-                    :key="i"
-                    class="font-medium"
-                    :class="part.match ? 'bg-yellow-200 text-yellow-900 rounded px-0.5' : 'text-gray-800'"
-                    >{{ part.text }}</span
-                  >
-                  <span class="mx-2 text-gray-400">vs</span>
-                  <span
-                    v-for="(part, i) in highlightParts(ronde[tafel - 1].pijp.speler.naam)"
-                    :key="i"
-                    class="font-medium"
-                    :class="part.match ? 'bg-yellow-200 text-yellow-900 rounded px-0.5' : 'text-gray-800'"
-                    >{{ part.text }}</span
-                  >
+              <td v-for="tafel in aantalTafels" :key="tafel" class="px-4 py-2">
+                <template v-for="w in [ronde[tafel - 1]]" :key="tafel">
+                  <template v-if="w">
+                    <div class="flex flex-col gap-1">
+                      <div class="whitespace-nowrap">
+                        <span
+                          v-for="(part, i) in highlightParts(w.ona.speler.naam)"
+                          :key="i"
+                          class="font-medium"
+                          :class="part.match ? 'bg-yellow-200 text-yellow-900 rounded px-0.5' : 'text-gray-800'"
+                          >{{ part.text }}</span
+                        >
+                        <span class="mx-2 text-gray-400">vs</span>
+                        <span
+                          v-for="(part, i) in highlightParts(w.pijp.speler.naam)"
+                          :key="i"
+                          class="font-medium"
+                          :class="part.match ? 'bg-yellow-200 text-yellow-900 rounded px-0.5' : 'text-gray-800'"
+                          >{{ part.text }}</span
+                        >
+                      </div>
+                      <div v-if="isAuthenticated && scores[w._id]" class="flex items-center gap-1.5">
+                        <input
+                          v-model="scores[w._id].onaGemaakt"
+                          type="number"
+                          min="0"
+                          placeholder="ONA"
+                          class="w-14 rounded border border-gray-200 px-1 py-0.5 text-center text-xs text-gray-800 focus:outline-none focus:ring-1 focus:ring-blue-300"
+                        />
+                        <span class="text-xs text-gray-400">-</span>
+                        <input
+                          v-model="scores[w._id].pijpGemaakt"
+                          type="number"
+                          min="0"
+                          placeholder="Pijp"
+                          class="w-14 rounded border border-gray-200 px-1 py-0.5 text-center text-xs text-gray-800 focus:outline-none focus:ring-1 focus:ring-blue-300"
+                        />
+                        <span class="text-xs text-gray-400 ml-1">B:</span>
+                        <input
+                          v-model="scores[w._id].beurten"
+                          type="number"
+                          min="1"
+                          placeholder="0"
+                          class="w-14 rounded border border-gray-200 px-1 py-0.5 text-center text-xs text-gray-800 focus:outline-none focus:ring-1 focus:ring-blue-300"
+                        />
+                        <button
+                          :disabled="opslaanBezig[w._id]"
+                          class="rounded bg-green-400 px-2 py-0.5 text-xs font-semibold text-white hover:bg-green-500 disabled:opacity-50 transition-colors"
+                          @click="slaOp(w._id)"
+                        >
+                          Opslaan
+                        </button>
+                      </div>
+                      <div
+                        v-else-if="!isAuthenticated && (w.ona.gemaakt !== undefined || w.pijp.gemaakt !== undefined)"
+                        class="text-xs text-gray-500"
+                      >
+                        {{ w.ona.gemaakt ?? '?' }} – {{ w.pijp.gemaakt ?? '?' }}
+                        <span v-if="w.beurten" class="ml-1 text-gray-400">({{ w.beurten }} b.)</span>
+                      </div>
+                    </div>
+                  </template>
+                  <span v-else class="text-gray-300">—</span>
                 </template>
-                <span v-else class="text-gray-300">—</span>
               </td>
             </tr>
           </tbody>

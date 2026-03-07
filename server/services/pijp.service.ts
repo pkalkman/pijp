@@ -1,4 +1,5 @@
 import type { Wedstrijd } from '#shared/types';
+import { ObjectId } from 'mongodb';
 
 async function getAllSpelers(): Promise<Speler[]> {
   let spelers = await spelerTable.find().toArray();
@@ -70,9 +71,22 @@ async function generateAndSaveWedstrijden(): Promise<Wedstrijd[]> {
   return getAllWedstrijden();
 }
 
+async function updateWedstrijdUitslag(id: string, data: { onaGemaakt?: number; pijpGemaakt?: number; beurten?: number }): Promise<void> {
+  const setFields: Record<string, number> = {};
+  if (data.onaGemaakt !== undefined) setFields['ona.gemaakt'] = data.onaGemaakt;
+  if (data.pijpGemaakt !== undefined) setFields['pijp.gemaakt'] = data.pijpGemaakt;
+  if (data.beurten !== undefined) setFields['beurten'] = data.beurten;
+
+  if (Object.keys(setFields).length) {
+    const dus = await wedstrijdTable.updateOne({ _id: new ObjectId(id) }, { $set: setFields });
+    console.log('dus', dus);
+  }
+}
+
 export const pijpService = {
   getAllSpelers,
   getPijpSettings,
   getAllWedstrijden,
   generateAndSaveWedstrijden,
+  updateWedstrijdUitslag,
 };

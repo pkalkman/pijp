@@ -37,6 +37,19 @@ export const usePijpStore = () => {
     initDone.value = true;
   }
 
+  async function slaUitslagOp(wedstrijdId: string, onaGemaakt?: number, pijpGemaakt?: number, beurten?: number) {
+    await $fetch(`/api/wedstrijden/${wedstrijdId}`, {
+      method: 'PUT',
+      body: { onaGemaakt, pijpGemaakt, beurten },
+    });
+    const w = wedstrijden.value.find((w) => w._id === wedstrijdId);
+    if (w) {
+      w.ona.gemaakt = onaGemaakt;
+      w.pijp.gemaakt = pijpGemaakt;
+      w.beurten = beurten;
+    }
+  }
+
   return {
     pouleOna,
     poulePijp,
@@ -48,5 +61,6 @@ export const usePijpStore = () => {
 
     updateSettings,
     genereerWedstrijden,
+    slaUitslagOp,
   };
 };
