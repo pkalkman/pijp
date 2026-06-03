@@ -17,7 +17,7 @@ const totaal = (poule: string) =>
     );
 
 const totaalOna = computed(() => totaal('ONA'));
-const totaalPijp = computed(() => totaal('De Pijp - N-Surance'));
+const totaalPijp = computed(() => totaal('Rheine'));
 </script>
 
 <template>
@@ -71,7 +71,7 @@ const totaalPijp = computed(() => totaal('De Pijp - N-Surance'));
             </tr>
             <tr class="border-t border-blue-100 bg-blue-50">
               <td class="px-2 py-2" colspan="2">
-                <span class="text-xs font-bold text-blue-400 uppercase tracking-wide">Totaal De Pijp</span>
+                <span class="text-xs font-bold text-blue-400 uppercase tracking-wide">Totaal Rheine</span>
               </td>
               <td class="px-2 py-2 text-right! font-semibold text-gray-700">{{ totaalPijp.gespeeld }}</td>
               <td class="px-2 py-2 text-right! font-semibold text-gray-700">{{ totaalPijp.caramboles }}</td>

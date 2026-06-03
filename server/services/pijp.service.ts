@@ -20,27 +20,34 @@ async function getAllSpelers(): Promise<Speler[]> {
 async function initDb() {
   await spelerTable.insertMany([
     { positie: 1, naam: 'Ron IJsselstijn', poule: 'ONA' },
-    { positie: 2, naam: 'Gerard de Jong', poule: 'ONA' },
+    { positie: 2, naam: 'Peter Kalkman', poule: 'ONA' },
     { positie: 3, naam: 'Wim van Wetten', poule: 'ONA' },
     { positie: 4, naam: 'Henk Statz', poule: 'ONA' },
     { positie: 5, naam: 'Gerard Mitgenberg', poule: 'ONA' },
-    { positie: 6, naam: 'Peter Kalkman', poule: 'ONA' },
-    { positie: 1, naam: 'Bob de Zeeuw', poule: 'De Pijp - N-Surance' },
-    { positie: 2, naam: 'Paul de Vos', poule: 'De Pijp - N-Surance' },
-    { positie: 3, naam: 'Niels van der Vlist', poule: 'De Pijp - N-Surance' },
-    { positie: 4, naam: 'Danny van Leeuwen', poule: 'De Pijp - N-Surance' },
-    { positie: 5, naam: 'Rene van Leeuwen', poule: 'De Pijp - N-Surance' },
-    { positie: 6, naam: 'Koert Veninga', poule: 'De Pijp - N-Surance' },
+    { positie: 6, naam: 'Marcel van Kooten', poule: 'ONA' },
+    { positie: 1, naam: 'Peter Berger', poule: 'Rheine' },
+    { positie: 2, naam: 'Henry Martinez Ramirez', poule: 'Rheine' },
+    { positie: 3, naam: 'Rainer Brinkers', poule: 'Rheine' },
+    { positie: 4, naam: 'Carsten Kötting', poule: 'Rheine' },
+    { positie: 5, naam: 'André Wiersch', poule: 'Rheine' },
+    { positie: 6, naam: 'Guido Haarmann', poule: 'Rheine' },
   ]);
 
   await pijpSettingsTable.insertOne({
-    startTijd: new Date(2026, 3, 8, 12, 0, 0, 0),
-    minutenPerWedstrijd: 20,
-    aantalTafels: 2,
+    startTijd: new Date(2026, 7, 4, 12, 0, 0, 0),
+    minutenPerWedstrijd: 35,
+    aantalTafels: 3,
   });
 }
 
 async function getPijpSettings(): Promise<PijpSettings> {
+  const settings = await pijpSettingsTable.findOne();
+  const { _id, ...result } = settings!;
+  return result;
+}
+
+async function updatePijpSettings(startTijd: Date, minutenPerWedstrijd: number, aantalTafels: number): Promise<PijpSettings> {
+  await pijpSettingsTable.updateOne({}, { $set: { startTijd, minutenPerWedstrijd, aantalTafels } });
   const settings = await pijpSettingsTable.findOne();
   const { _id, ...result } = settings!;
   return result;
@@ -61,7 +68,7 @@ async function generateAndSaveWedstrijden(): Promise<Wedstrijd[]> {
   const settings = await getPijpSettings();
 
   const pouleOna = { naam: 'ONA', spelers: spelers.filter((s) => s.poule === 'ONA') };
-  const poulePijp = { naam: 'De Pijp - N-Surance', spelers: spelers.filter((s) => s.poule === 'De Pijp - N-Surance') };
+  const poulePijp = { naam: 'Rheine', spelers: spelers.filter((s) => s.poule === 'Rheine') };
 
   const wedstrijden = generateWedstrijden(pouleOna, poulePijp, settings);
 
@@ -123,6 +130,7 @@ async function getStand(): Promise<StandRegel[]> {
 export const pijpService = {
   getAllSpelers,
   getPijpSettings,
+  updatePijpSettings,
   getAllWedstrijden,
   generateAndSaveWedstrijden,
   updateWedstrijdUitslag,
@@ -131,8 +139,5 @@ export const pijpService = {
 };
 
 async function clearWedstrijdUitslag(id: string): Promise<void> {
-  await wedstrijdTable.updateOne(
-    { _id: new ObjectId(id) },
-    { $unset: { 'ona.gemaakt': '', 'pijp.gemaakt': '', beurten: '' } },
-  );
+  await wedstrijdTable.updateOne({ _id: new ObjectId(id) }, { $unset: { 'ona.gemaakt': '', 'pijp.gemaakt': '', beurten: '' } });
 }

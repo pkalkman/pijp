@@ -38,7 +38,12 @@ export const usePijpStore = () => {
     return [...map.values()].sort((a, b) => b.punten - a.punten || b.caramboles - a.caramboles);
   });
 
-  function updateSettings(settings: PijpSettings) {
+  async function updateSettings(settings: PijpSettings) {
+    const result = await $fetch<Wedstrijd[]>('/api/settings', {
+      method: 'POST',
+      body: settings,
+    });
+    console.log('result', result);
     pijpSettings.value = settings;
   }
 
@@ -55,8 +60,8 @@ export const usePijpStore = () => {
       spelers: spelers.filter((s) => s.poule === 'ONA'),
     };
     poulePijp.value = {
-      naam: 'De Pijp - N-Surance',
-      spelers: spelers.filter((s) => s.poule === 'De Pijp - N-Surance'),
+      naam: 'Rheine',
+      spelers: spelers.filter((s) => s.poule === 'Rheine'),
     };
 
     pijpSettings.value = await $fetch<PijpSettings>('/api/settings');

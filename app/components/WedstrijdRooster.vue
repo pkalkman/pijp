@@ -147,7 +147,7 @@ async function wisUitslag(wedstrijdId: string) {
                 v-model="scores[w._id].pijpGemaakt"
                 type="number"
                 min="0"
-                placeholder="Pijp"
+                placeholder="Rheine"
                 class="w-14 rounded border border-gray-200 px-1 py-0.5 text-center text-xs text-gray-800 focus:outline-none focus:ring-1 focus:ring-blue-300"
               />
               <span class="text-xs text-gray-400 ml-1">B:</span>
@@ -245,7 +245,7 @@ async function wisUitslag(wedstrijdId: string) {
                           v-model="scores[w._id].pijpGemaakt"
                           type="number"
                           min="0"
-                          placeholder="Pijp"
+                          placeholder="Rheine"
                           class="w-14 rounded border border-gray-200 px-1 py-0.5 text-center text-xs text-gray-800 focus:outline-none focus:ring-1 focus:ring-blue-300"
                         />
                         <span class="text-xs text-gray-400 ml-1">B:</span>
