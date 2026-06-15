@@ -87,7 +87,7 @@ function onSubmit() {
             />
           </label>
           <label class="flex flex-col gap-1">
-            <span class="text-xs font-semibold text-gray-500 uppercase tracking-wide">Minimum aantal beurten</span>
+            <span class="text-xs font-semibold text-gray-500 uppercase tracking-wide">Minimum aantal caramboles</span>
             <input
               v-model.number="minimumAantalBeurten"
               type="number"
