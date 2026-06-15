@@ -153,7 +153,7 @@ async function wisUitslag(wedstrijdId: string) {
               </span>
             </div>
             <template v-for="score in [scores[w._id]]" :key="'score-' + w._id">
-              <div v-if="isAuthenticated && score" class="flex items-center gap-2 px-3 pb-2">
+              <div v-if="isAuthenticated && score" class="flex flex-wrap items-center gap-2 px-3 pb-2">
                 <input
                   v-model="score.onaGemaakt"
                   type="number"
@@ -259,11 +259,12 @@ async function wisUitslag(wedstrijdId: string) {
                         >({{ berekenCaramboles(w.pijp.speler.moyenne) }})</span>
                       </div>
                       <template v-for="score in [scores[w._id]]" :key="'score-' + w._id">
-                        <div v-if="isAuthenticated && score" class="flex items-center gap-1.5">
+                        <div v-if="isAuthenticated && score" class="flex flex-wrap items-center gap-1.5">
                           <input
                             v-model="score.onaGemaakt"
                             type="number"
                             min="0"
+                            :max="berekenCaramboles(w.ona.speler.moyenne) ?? undefined"
                             placeholder="ONA"
                             class="w-14 rounded border border-gray-200 px-1 py-0.5 text-center text-xs text-gray-800 focus:outline-none focus:ring-1 focus:ring-blue-300"
                           />
@@ -272,6 +273,7 @@ async function wisUitslag(wedstrijdId: string) {
                             v-model="score.pijpGemaakt"
                             type="number"
                             min="0"
+                            :max="berekenCaramboles(w.pijp.speler.moyenne) ?? undefined"
                             placeholder="Rheine"
                             class="w-14 rounded border border-gray-200 px-1 py-0.5 text-center text-xs text-gray-800 focus:outline-none focus:ring-1 focus:ring-blue-300"
                           />

@@ -9,6 +9,15 @@ export const usePijpStore = () => {
   const initDone = useState<boolean>('pijp:init-done', () => false);
 
   const stand = computed<StandRegel[]>(() => {
+    const settings = pijpSettings.value;
+    const isBeurten = settings?.speelwijze === 'beurten' && !!settings.vastAantalBeurten;
+
+    function spelersTarget(moyenne: number): number {
+      if (!settings?.vastAantalBeurten) return 0;
+      const calc = Math.floor((moyenne ?? 0) * settings.vastAantalBeurten);
+      return Math.max(settings.minimumAantalBeurten ?? 0, isNaN(calc) ? 0 : calc);
+    }
+
     const map = new Map<string, StandRegel>();
     for (const w of wedstrijden.value) {
       const onaId = w.ona.speler._id;
@@ -26,15 +35,29 @@ export const usePijpStore = () => {
         ona.beurten += w.beurten;
         pijp.beurten += w.beurten;
       }
-      if (w.ona.gemaakt > w.pijp.gemaakt) {
-        ona.punten += 2;
-      } else if (w.ona.gemaakt === w.pijp.gemaakt) {
-        ona.punten += 1;
-        pijp.punten += 1;
+      if (isBeurten) {
+        const onaTarget = spelersTarget(w.ona.speler.moyenne);
+        const pijpTarget = spelersTarget(w.pijp.speler.moyenne);
+        if (onaTarget > 0) ona.punten += Math.floor((w.ona.gemaakt / onaTarget) * 10);
+        if (pijpTarget > 0) pijp.punten += Math.floor((w.pijp.gemaakt / pijpTarget) * 10);
       } else {
-        pijp.punten += 2;
+        if (w.ona.gemaakt > w.pijp.gemaakt) {
+          ona.punten += 2;
+        } else if (w.ona.gemaakt === w.pijp.gemaakt) {
+          ona.punten += 1;
+          pijp.punten += 1;
+        } else {
+          pijp.punten += 2;
+        }
       }
     }
+
+    if (isBeurten) {
+      for (const [, regel] of map) {
+        regel.teMaken = spelersTarget(regel.speler.moyenne) * regel.gespeeld;
+      }
+    }
+
     return [...map.values()].sort((a, b) => b.punten - a.punten || b.caramboles - a.caramboles);
   });
 

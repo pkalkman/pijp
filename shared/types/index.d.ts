@@ -26,6 +26,7 @@ export type StandRegel = {
   caramboles: number;
   beurten: number;
   punten: number;
+  teMaken?: number;
 };
 
 export type Wedstrijd = {
