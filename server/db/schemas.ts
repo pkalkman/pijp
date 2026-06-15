@@ -5,6 +5,7 @@ export type SpelerSchema = {
   positie: number;
   naam: string;
   poule: string;
+  moyenne: number;
 };
 
 export type PijpSettingsSchema = {

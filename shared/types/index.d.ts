@@ -3,6 +3,7 @@ export type Speler = {
   positie: number;
   naam: string;
   poule: string;
+  moyenne: number;
 };
 
 export type Poule = {

@@ -19,18 +19,18 @@ async function getAllSpelers(): Promise<Speler[]> {
 
 async function initDb() {
   await spelerTable.insertMany([
-    { positie: 1, naam: 'Ron IJsselstijn', poule: 'ONA' },
-    { positie: 2, naam: 'Peter Kalkman', poule: 'ONA' },
-    { positie: 3, naam: 'Wim van Wetten', poule: 'ONA' },
-    { positie: 4, naam: 'Henk Statz', poule: 'ONA' },
-    { positie: 5, naam: 'Gerard Mitgenberg', poule: 'ONA' },
-    { positie: 6, naam: 'Marcel van Kooten', poule: 'ONA' },
-    { positie: 1, naam: 'Peter Berger', poule: 'Rheine' },
-    { positie: 2, naam: 'Henry Martinez Ramirez', poule: 'Rheine' },
-    { positie: 3, naam: 'Rainer Brinkers', poule: 'Rheine' },
-    { positie: 4, naam: 'Carsten Kötting', poule: 'Rheine' },
-    { positie: 5, naam: 'André Wiersch', poule: 'Rheine' },
-    { positie: 6, naam: 'Guido Haarmann', poule: 'Rheine' },
+    { positie: 1, naam: 'Ron IJsselstijn', poule: 'ONA', moyenne: 0.897 },
+    { positie: 2, naam: 'Peter Kalkman', poule: 'ONA', moyenne: 0.603 },
+    { positie: 3, naam: 'Wim van Wetten', poule: 'ONA', moyenne: 0.544 },
+    { positie: 4, naam: 'Henk Statz', poule: 'ONA', moyenne: 0.507 },
+    { positie: 5, naam: 'Gerard Mitgenberg', poule: 'ONA', moyenne: 0.475 },
+    { positie: 6, naam: 'Marcel van Kooten', poule: 'ONA', moyenne: 0.470 },
+    { positie: 1, naam: 'Peter Berger', poule: 'Rheine', moyenne: 0.553 },
+    { positie: 2, naam: 'Henry Martinez Ramirez', poule: 'Rheine', moyenne: 0.536 },
+    { positie: 3, naam: 'Rainer Brinkers', poule: 'Rheine', moyenne: 0.300 },
+    { positie: 4, naam: 'Carsten Kötting', poule: 'Rheine', moyenne: 0.250 },
+    { positie: 5, naam: 'André Wiersch', poule: 'Rheine', moyenne: 0.200 },
+    { positie: 6, naam: 'Guido Haarmann', poule: 'Rheine', moyenne: 0.150 },
   ]);
 
   await pijpSettingsTable.insertOne({
