@@ -136,8 +136,15 @@ export const pijpService = {
   updateWedstrijdUitslag,
   clearWedstrijdUitslag,
   getStand,
+  updateSpeler,
 };
 
 async function clearWedstrijdUitslag(id: string): Promise<void> {
   await wedstrijdTable.updateOne({ _id: new ObjectId(id) }, { $unset: { 'ona.gemaakt': '', 'pijp.gemaakt': '', beurten: '' } });
+}
+
+async function updateSpeler(id: string, naam: string, moyenne: number): Promise<Speler> {
+  await spelerTable.updateOne({ _id: new ObjectId(id) }, { $set: { naam, moyenne } });
+  const speler = await spelerTable.findOne({ _id: new ObjectId(id) });
+  return { ...speler!, _id: speler!._id!.toHexString() };
 }

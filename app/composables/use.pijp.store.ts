@@ -96,6 +96,21 @@ export const usePijpStore = () => {
     }
   }
 
+  async function updateSpeler(spelerId: string, naam: string, moyenne: number) {
+    await $fetch(`/api/spelers/${spelerId}`, {
+      method: 'PUT',
+      body: { naam, moyenne },
+    });
+    for (const poule of [pouleOna.value, poulePijp.value]) {
+      if (!poule) continue;
+      const speler = poule.spelers.find((s) => s._id === spelerId);
+      if (speler) {
+        speler.naam = naam;
+        speler.moyenne = moyenne;
+      }
+    }
+  }
+
   async function verwijderUitslag(wedstrijdId: string) {
     await $fetch(`/api/wedstrijden/${wedstrijdId}`, { method: 'DELETE' });
     const w = wedstrijden.value.find((w) => w._id === wedstrijdId);
@@ -129,6 +144,7 @@ export const usePijpStore = () => {
     initDone,
 
     updateSettings,
+    updateSpeler,
     stand,
     genereerWedstrijden,
     slaUitslagOp,
