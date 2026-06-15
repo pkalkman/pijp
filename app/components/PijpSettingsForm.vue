@@ -130,7 +130,7 @@ function onSubmit() {
             <span class="text-sm text-gray-800">{{ pijpSettings!.vastAantalBeurten }}</span>
           </div>
           <div class="flex flex-col gap-1">
-            <span class="text-xs font-semibold text-gray-500 uppercase tracking-wide">Minimum aantal beurten</span>
+            <span class="text-xs font-semibold text-gray-500 uppercase tracking-wide">Minimum aantal caramboles</span>
             <span class="text-sm text-gray-800">{{ pijpSettings!.minimumAantalBeurten }}</span>
           </div>
         </template>
