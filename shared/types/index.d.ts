@@ -15,6 +15,9 @@ export type PijpSettings = {
   startTijd: Date;
   minutenPerWedstrijd: number;
   aantalTafels: number;
+  speelwijze: 'tijd' | 'beurten';
+  vastAantalBeurten?: number;
+  minimumAantalBeurten?: number;
 }
 
 export type StandRegel = {

@@ -43,14 +43,14 @@ async function initDb() {
 async function getPijpSettings(): Promise<PijpSettings> {
   const settings = await pijpSettingsTable.findOne();
   const { _id, ...result } = settings!;
-  return result;
+  return { speelwijze: 'tijd', ...result } as PijpSettings;
 }
 
-async function updatePijpSettings(startTijd: Date, minutenPerWedstrijd: number, aantalTafels: number): Promise<PijpSettings> {
-  await pijpSettingsTable.updateOne({}, { $set: { startTijd, minutenPerWedstrijd, aantalTafels } });
-  const settings = await pijpSettingsTable.findOne();
-  const { _id, ...result } = settings!;
-  return result;
+async function updatePijpSettings(settings: PijpSettings): Promise<PijpSettings> {
+  await pijpSettingsTable.updateOne({}, { $set: settings });
+  const saved = await pijpSettingsTable.findOne();
+  const { _id, ...result } = saved!;
+  return result as PijpSettings;
 }
 
 async function getAllWedstrijden(): Promise<Wedstrijd[]> {

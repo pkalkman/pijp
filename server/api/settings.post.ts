@@ -9,7 +9,17 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 401, statusMessage: 'Unauthorized' });
   }
 
-  const {startTijd, aantalTafels, minutenPerWedstrijd} = await readBody<{ startTijd: Date; minutenPerWedstrijd: number; aantalTafels: number }>(event);
+  const body = await readBody<{
+    startTijd: string;
+    minutenPerWedstrijd: number;
+    aantalTafels: number;
+    speelwijze: 'tijd' | 'beurten';
+    vastAantalBeurten?: number;
+    minimumAantalBeurten?: number;
+  }>(event);
 
-  return pijpService.updatePijpSettings(new Date(startTijd), minutenPerWedstrijd, aantalTafels);
+  return pijpService.updatePijpSettings({
+    ...body,
+    startTijd: new Date(body.startTijd),
+  });
 });

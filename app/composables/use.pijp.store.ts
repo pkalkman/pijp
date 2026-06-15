@@ -39,11 +39,10 @@ export const usePijpStore = () => {
   });
 
   async function updateSettings(settings: PijpSettings) {
-    const result = await $fetch<Wedstrijd[]>('/api/settings', {
+    await $fetch<PijpSettings>('/api/settings', {
       method: 'POST',
       body: settings,
     });
-    console.log('result', result);
     pijpSettings.value = settings;
   }
 
