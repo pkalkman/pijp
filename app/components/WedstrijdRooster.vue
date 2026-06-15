@@ -57,7 +57,15 @@ function formatTijd(date: Date): string {
 }
 
 function rondeStartTijd(ronde: Wedstrijd[]): string {
-  return ronde[0] ? rondeStartTijd(ronde) : '';
+  return ronde[0] ? formatTijd(ronde[0].tijdstip) : '';
+}
+
+function berekenCaramboles(moyenne: number): number | null {
+  const s = pijpSettings.value;
+  if (!s || s.speelwijze !== 'beurten' || !s.vastAantalBeurten) return null;
+  const result = Math.floor((moyenne ?? 0) * s.vastAantalBeurten);
+  if (isNaN(result)) return null;
+  return Math.max(s.minimumAantalBeurten ?? 0, result);
 }
 
 async function slaOp(wedstrijdId: string) {
@@ -127,7 +135,10 @@ async function wisUitslag(wedstrijdId: string) {
                   class="font-medium"
                   :class="part.match ? 'bg-yellow-200 text-yellow-900 rounded px-0.5' : 'text-gray-800'"
                   >{{ part.text }}</span
-                >
+                ><span
+                  v-if="berekenCaramboles(w.ona.speler.moyenne) !== null"
+                  class="text-blue-500 text-xs ml-1"
+                >({{ berekenCaramboles(w.ona.speler.moyenne) }})</span>
                 <span class="mx-1.5 text-gray-300">vs</span>
                 <span
                   v-for="(part, i) in highlightParts(w.pijp.speler.naam)"
@@ -135,7 +146,10 @@ async function wisUitslag(wedstrijdId: string) {
                   class="font-medium"
                   :class="part.match ? 'bg-yellow-200 text-yellow-900 rounded px-0.5' : 'text-gray-800'"
                   >{{ part.text }}</span
-                >
+                ><span
+                  v-if="berekenCaramboles(w.pijp.speler.moyenne) !== null"
+                  class="text-blue-500 text-xs ml-1"
+                >({{ berekenCaramboles(w.pijp.speler.moyenne) }})</span>
               </span>
             </div>
             <template v-for="score in [scores[w._id]]" :key="'score-' + w._id">
@@ -228,7 +242,10 @@ async function wisUitslag(wedstrijdId: string) {
                           class="font-medium"
                           :class="part.match ? 'bg-yellow-200 text-yellow-900 rounded px-0.5' : 'text-gray-800'"
                           >{{ part.text }}</span
-                        >
+                        ><span
+                          v-if="berekenCaramboles(w.ona.speler.moyenne) !== null"
+                          class="text-blue-500 text-xs ml-1"
+                        >({{ berekenCaramboles(w.ona.speler.moyenne) }})</span>
                         <span class="mx-2 text-gray-400">vs</span>
                         <span
                           v-for="(part, i) in highlightParts(w.pijp.speler.naam)"
@@ -236,7 +253,10 @@ async function wisUitslag(wedstrijdId: string) {
                           class="font-medium"
                           :class="part.match ? 'bg-yellow-200 text-yellow-900 rounded px-0.5' : 'text-gray-800'"
                           >{{ part.text }}</span
-                        >
+                        ><span
+                          v-if="berekenCaramboles(w.pijp.speler.moyenne) !== null"
+                          class="text-blue-500 text-xs ml-1"
+                        >({{ berekenCaramboles(w.pijp.speler.moyenne) }})</span>
                       </div>
                       <template v-for="score in [scores[w._id]]" :key="'score-' + w._id">
                         <div v-if="isAuthenticated && score" class="flex items-center gap-1.5">
