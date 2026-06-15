@@ -59,35 +59,38 @@ async function opslaan(speler: Speler) {
           {{ speler.positie }}
         </span>
         <template v-if="isAuthenticated">
-          <div class="flex flex-col gap-2 flex-1 min-w-0">
-            <input
-              v-model="spelersEdit[speler._id].naam"
-              type="text"
-              class="rounded border border-gray-200 px-2 py-1 text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-300 w-full"
-            />
-            <div class="flex items-center gap-2">
+          <template v-for="edit in [spelersEdit[speler._id]]" :key="speler._id">
+            <div v-if="edit" class="flex flex-col gap-2 flex-1 min-w-0">
               <input
-                v-model.number="spelersEdit[speler._id].moyenne"
-                type="number"
-                step="0.001"
-                min="0"
-                max="9.999"
-                class="rounded border border-gray-200 px-2 py-1 text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-300 flex-1 min-w-0"
+                v-model="edit.naam"
+                type="text"
+                class="rounded border border-gray-200 px-2 py-1 text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-300 w-full"
               />
-              <span
-                v-if="berekenCaramboles(spelersEdit[speler._id].moyenne) !== null"
-                class="text-blue-600 text-xs font-semibold shrink-0"
-              >
-                {{ berekenCaramboles(spelersEdit[speler._id].moyenne) }} car.
-              </span>
+              <div class="flex items-center gap-2">
+                <input
+                  v-model.number="edit.moyenne"
+                  type="number"
+                  step="0.001"
+                  min="0"
+                  max="9.999"
+                  class="rounded border border-gray-200 px-2 py-1 text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-300 flex-1 min-w-0"
+                />
+                <span
+                  v-if="berekenCaramboles(edit.moyenne) !== null"
+                  class="text-blue-600 text-xs font-semibold shrink-0"
+                >
+                  {{ berekenCaramboles(edit.moyenne) }} car.
+                </span>
+              </div>
             </div>
-          </div>
-          <button
-            class="shrink-0 rounded bg-blue-400 px-2 py-1 text-xs font-semibold text-yellow-300 hover:bg-blue-500 transition-colors"
-            @click="opslaan(speler)"
-          >
-            Sla op
-          </button>
+            <button
+              v-if="edit"
+              class="shrink-0 rounded bg-blue-400 px-2 py-1 text-xs font-semibold text-yellow-300 hover:bg-blue-500 transition-colors"
+              @click="opslaan(speler)"
+            >
+              Sla op
+            </button>
+          </template>
         </template>
         <template v-else>
           <span class="text-gray-800 text-sm flex-1">{{ speler.naam }}</span>

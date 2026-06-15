@@ -56,6 +56,10 @@ function formatTijd(date: Date): string {
   return date.toLocaleTimeString('nl-NL', { hour: '2-digit', minute: '2-digit' });
 }
 
+function rondeStartTijd(ronde: Wedstrijd[]): string {
+  return ronde[0] ? rondeStartTijd(ronde) : '';
+}
+
 async function slaOp(wedstrijdId: string) {
   opslaanBezig.value[wedstrijdId] = true;
   try {
@@ -111,7 +115,7 @@ async function wisUitslag(wedstrijdId: string) {
           :class="rondeMatchesZoekterm(ronde) ? '' : 'opacity-25'"
         >
           <div class="bg-blue-50 px-3 py-1.5 text-xs font-mono font-semibold text-blue-400">
-            {{ formatTijd(ronde[0].tijdstip) }}
+            {{ rondeStartTijd(ronde) }}
           </div>
           <div v-for="w in ronde" :key="w._id" class="border-t border-gray-100 first:border-t-0">
             <div class="flex items-center gap-2 px-3 py-2">
@@ -134,53 +138,55 @@ async function wisUitslag(wedstrijdId: string) {
                 >
               </span>
             </div>
-            <div v-if="isAuthenticated && scores[w._id]" class="flex items-center gap-2 px-3 pb-2">
-              <input
-                v-model="scores[w._id].onaGemaakt"
-                type="number"
-                min="0"
-                placeholder="ONA"
-                class="w-14 rounded border border-gray-200 px-1 py-0.5 text-center text-xs text-gray-800 focus:outline-none focus:ring-1 focus:ring-blue-300"
-              />
-              <span class="text-xs text-gray-400">-</span>
-              <input
-                v-model="scores[w._id].pijpGemaakt"
-                type="number"
-                min="0"
-                placeholder="Rheine"
-                class="w-14 rounded border border-gray-200 px-1 py-0.5 text-center text-xs text-gray-800 focus:outline-none focus:ring-1 focus:ring-blue-300"
-              />
-              <span class="text-xs text-gray-400 ml-1">B:</span>
-              <input
-                v-model="scores[w._id].beurten"
-                type="number"
-                min="1"
-                placeholder="0"
-                class="w-14 rounded border border-gray-200 px-1 py-0.5 text-center text-xs text-gray-800 focus:outline-none focus:ring-1 focus:ring-blue-300"
-              />
-              <button
-                :disabled="opslaanBezig[w._id]"
-                class="rounded bg-green-400 px-2 py-0.5 text-xs font-semibold text-white hover:bg-green-500 disabled:opacity-50 transition-colors"
-                @click="slaOp(w._id)"
+            <template v-for="score in [scores[w._id]]" :key="'score-' + w._id">
+              <div v-if="isAuthenticated && score" class="flex items-center gap-2 px-3 pb-2">
+                <input
+                  v-model="score.onaGemaakt"
+                  type="number"
+                  min="0"
+                  placeholder="ONA"
+                  class="w-14 rounded border border-gray-200 px-1 py-0.5 text-center text-xs text-gray-800 focus:outline-none focus:ring-1 focus:ring-blue-300"
+                />
+                <span class="text-xs text-gray-400">-</span>
+                <input
+                  v-model="score.pijpGemaakt"
+                  type="number"
+                  min="0"
+                  placeholder="Rheine"
+                  class="w-14 rounded border border-gray-200 px-1 py-0.5 text-center text-xs text-gray-800 focus:outline-none focus:ring-1 focus:ring-blue-300"
+                />
+                <span class="text-xs text-gray-400 ml-1">B:</span>
+                <input
+                  v-model="score.beurten"
+                  type="number"
+                  min="1"
+                  placeholder="0"
+                  class="w-14 rounded border border-gray-200 px-1 py-0.5 text-center text-xs text-gray-800 focus:outline-none focus:ring-1 focus:ring-blue-300"
+                />
+                <button
+                  :disabled="!!opslaanBezig[w._id]"
+                  class="rounded bg-green-400 px-2 py-0.5 text-xs font-semibold text-white hover:bg-green-500 disabled:opacity-50 transition-colors"
+                  @click="slaOp(w._id)"
+                >
+                  Opslaan
+                </button>
+                <button
+                  v-if="w.ona.gemaakt !== undefined || w.pijp.gemaakt !== undefined"
+                  :disabled="!!opslaanBezig[w._id]"
+                  class="rounded bg-red-400 px-2 py-0.5 text-xs font-semibold text-white hover:bg-red-500 disabled:opacity-50 transition-colors"
+                  @click="wisUitslag(w._id)"
+                >
+                  Wis
+                </button>
+              </div>
+              <div
+                v-else-if="!isAuthenticated && (w.ona.gemaakt !== undefined || w.pijp.gemaakt !== undefined)"
+                class="px-3 pb-2 text-xs text-gray-500"
               >
-                Opslaan
-              </button>
-              <button
-                v-if="w.ona.gemaakt !== undefined || w.pijp.gemaakt !== undefined"
-                :disabled="opslaanBezig[w._id]"
-                class="rounded bg-red-400 px-2 py-0.5 text-xs font-semibold text-white hover:bg-red-500 disabled:opacity-50 transition-colors"
-                @click="wisUitslag(w._id)"
-              >
-                Wis
-              </button>
-            </div>
-            <div
-              v-else-if="!isAuthenticated && (w.ona.gemaakt !== undefined || w.pijp.gemaakt !== undefined)"
-              class="px-3 pb-2 text-xs text-gray-500"
-            >
-              {{ w.ona.gemaakt ?? '?' }} – {{ w.pijp.gemaakt ?? '?' }}
-              <span v-if="w.beurten" class="ml-1 text-gray-400">({{ w.beurten }} b.)</span>
-            </div>
+                {{ w.ona.gemaakt ?? '?' }} – {{ w.pijp.gemaakt ?? '?' }}
+                <span v-if="w.beurten" class="ml-1 text-gray-400">({{ w.beurten }} b.)</span>
+              </div>
+            </template>
           </div>
         </div>
       </div>
@@ -209,7 +215,7 @@ async function wisUitslag(wedstrijdId: string) {
               :class="rondeMatchesZoekterm(ronde) ? (idx % 2 === 0 ? 'bg-white' : 'bg-blue-50') : 'opacity-25'"
             >
               <td class="px-4 py-2 font-mono text-gray-500 whitespace-nowrap">
-                {{ formatTijd(ronde[0].tijdstip) }}
+                {{ rondeStartTijd(ronde) }}
               </td>
               <td v-for="tafel in aantalTafels" :key="tafel" class="px-4 py-2">
                 <template v-for="w in [ronde[tafel - 1]]" :key="tafel">
@@ -232,53 +238,55 @@ async function wisUitslag(wedstrijdId: string) {
                           >{{ part.text }}</span
                         >
                       </div>
-                      <div v-if="isAuthenticated && scores[w._id]" class="flex items-center gap-1.5">
-                        <input
-                          v-model="scores[w._id].onaGemaakt"
-                          type="number"
-                          min="0"
-                          placeholder="ONA"
-                          class="w-14 rounded border border-gray-200 px-1 py-0.5 text-center text-xs text-gray-800 focus:outline-none focus:ring-1 focus:ring-blue-300"
-                        />
-                        <span class="text-xs text-gray-400">-</span>
-                        <input
-                          v-model="scores[w._id].pijpGemaakt"
-                          type="number"
-                          min="0"
-                          placeholder="Rheine"
-                          class="w-14 rounded border border-gray-200 px-1 py-0.5 text-center text-xs text-gray-800 focus:outline-none focus:ring-1 focus:ring-blue-300"
-                        />
-                        <span class="text-xs text-gray-400 ml-1">B:</span>
-                        <input
-                          v-model="scores[w._id].beurten"
-                          type="number"
-                          min="1"
-                          placeholder="0"
-                          class="w-14 rounded border border-gray-200 px-1 py-0.5 text-center text-xs text-gray-800 focus:outline-none focus:ring-1 focus:ring-blue-300"
-                        />
-                        <button
-                          :disabled="opslaanBezig[w._id]"
-                          class="rounded bg-green-400 px-2 py-0.5 text-xs font-semibold text-white hover:bg-green-500 disabled:opacity-50 transition-colors"
-                          @click="slaOp(w._id)"
+                      <template v-for="score in [scores[w._id]]" :key="'score-' + w._id">
+                        <div v-if="isAuthenticated && score" class="flex items-center gap-1.5">
+                          <input
+                            v-model="score.onaGemaakt"
+                            type="number"
+                            min="0"
+                            placeholder="ONA"
+                            class="w-14 rounded border border-gray-200 px-1 py-0.5 text-center text-xs text-gray-800 focus:outline-none focus:ring-1 focus:ring-blue-300"
+                          />
+                          <span class="text-xs text-gray-400">-</span>
+                          <input
+                            v-model="score.pijpGemaakt"
+                            type="number"
+                            min="0"
+                            placeholder="Rheine"
+                            class="w-14 rounded border border-gray-200 px-1 py-0.5 text-center text-xs text-gray-800 focus:outline-none focus:ring-1 focus:ring-blue-300"
+                          />
+                          <span class="text-xs text-gray-400 ml-1">B:</span>
+                          <input
+                            v-model="score.beurten"
+                            type="number"
+                            min="1"
+                            placeholder="0"
+                            class="w-14 rounded border border-gray-200 px-1 py-0.5 text-center text-xs text-gray-800 focus:outline-none focus:ring-1 focus:ring-blue-300"
+                          />
+                          <button
+                            :disabled="!!opslaanBezig[w._id]"
+                            class="rounded bg-green-400 px-2 py-0.5 text-xs font-semibold text-white hover:bg-green-500 disabled:opacity-50 transition-colors"
+                            @click="slaOp(w._id)"
+                          >
+                            Opslaan
+                          </button>
+                          <button
+                            v-if="w.ona.gemaakt !== undefined || w.pijp.gemaakt !== undefined"
+                            :disabled="!!opslaanBezig[w._id]"
+                            class="rounded bg-red-400 px-2 py-0.5 text-xs font-semibold text-white hover:bg-red-500 disabled:opacity-50 transition-colors"
+                            @click="wisUitslag(w._id)"
+                          >
+                            Wis
+                          </button>
+                        </div>
+                        <div
+                          v-else-if="!isAuthenticated && (w.ona.gemaakt !== undefined || w.pijp.gemaakt !== undefined)"
+                          class="text-xs text-gray-500"
                         >
-                          Opslaan
-                        </button>
-                        <button
-                          v-if="w.ona.gemaakt !== undefined || w.pijp.gemaakt !== undefined"
-                          :disabled="opslaanBezig[w._id]"
-                          class="rounded bg-red-400 px-2 py-0.5 text-xs font-semibold text-white hover:bg-red-500 disabled:opacity-50 transition-colors"
-                          @click="wisUitslag(w._id)"
-                        >
-                          Wis
-                        </button>
-                      </div>
-                      <div
-                        v-else-if="!isAuthenticated && (w.ona.gemaakt !== undefined || w.pijp.gemaakt !== undefined)"
-                        class="text-xs text-gray-500"
-                      >
-                        {{ w.ona.gemaakt ?? '?' }} – {{ w.pijp.gemaakt ?? '?' }}
-                        <span v-if="w.beurten" class="ml-1 text-gray-400">({{ w.beurten }} b.)</span>
-                      </div>
+                          {{ w.ona.gemaakt ?? '?' }} – {{ w.pijp.gemaakt ?? '?' }}
+                          <span v-if="w.beurten" class="ml-1 text-gray-400">({{ w.beurten }} b.)</span>
+                        </div>
+                      </template>
                     </div>
                   </template>
                   <span v-else class="text-gray-300">—</span>
